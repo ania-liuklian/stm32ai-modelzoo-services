@@ -10,6 +10,27 @@
 ## Quick & easy examples:
 The `operation_mode` top-level attribute specifies the operations or the service you want to execute. This may be single operation or a set of chained operations.
 
+## Train and evaluate on CPU (WSL/Ubuntu)
+
+Run from `human_activity_recognition` in WSL/Ubuntu (Python 3.12):
+
+```bash
+python3.12 -m venv st_zoo
+source st_zoo/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements-cpu.txt
+python stm32ai_main.py --config-path ./config_file_examples/ --config-name training_config_mobility_cpu.yaml
+```
+
+If Python 3.12 or `venv` is missing:
+
+```bash
+sudo apt update
+sudo apt install python3.12 python3.12-venv
+```
+
+Uses the included `mobility_v1` dataset. Training automatically evaluates the model on the test set. Outputs are saved under `tf/src/experiments_outputs/`. For separate evaluation, use the same config changes and command shown above.
+
 You can refer to following readme tutorials that provide typical examples of operation modes:
 
    - [training, chain_tb](./docs/README_TRAINING.md)
@@ -31,11 +52,10 @@ The different values of the `operation_mode` attribute and the corresponding ope
 
 
 ## You don't know where to start? You feel lost?
-Don't forget to follow our tuto below for a quick ramp up : 
+Don't forget to follow our tuto below for a quick ramp up :
 * [How to define and train my own model?](./docs/tuto/how_to_define_and_train_my_own_model.md)
 * [How to fine tune a model on my own dataset?](./docs/tuto/how_to_finetune_a_model_zoo_model_on_my_own_dataset.md)
 * [How can I quickly check the performance of my model using the dev cloud?](./docs/tuto/how_to_quickly_benchmark_the_performances_of_a_model.md)
 * [How can I deploy my model?](./docs/tuto/how_to_deploy_a_model_on_a_target.md)
 
 Remember that minimalistic yaml files are available [here](./config_file_examples/) to play with specific services, and that all pre-trained models in the [STM32 model zoo](https://github.com/STMicroelectronics/stm32ai-modelzoo/human_activity_recognition/) are provided with their configuration .yaml file used to generate them. These are very good starting points to start playing with!
-
