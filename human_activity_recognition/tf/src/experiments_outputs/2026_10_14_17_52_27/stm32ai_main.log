@@ -1,0 +1,13 @@
+operation_mode: training
+Dataset : mobility_v1
+Model name : st_ign
+The last epoch history :
+['epoch', 'accuracy', 'learning_rate', 'loss', 'val_accuracy', 'val_loss']
+['77', '0.9309764504432678', '0.0005000000237487257', '0.19380860030651093', '0.9520202279090881', '0.14258989691734314']
+Training runtime : 10 s
+Average time per epoch : 0.13 s
+Nb params of float model : 3064
+Float model test_set:
+Accuracy of float model : 86.84 %
+Loss of float model : 0.61 
+operation finished: training
