@@ -27,13 +27,13 @@ def prepare_kwargs_for_dataloader(cfg: DictConfig):
         dataloader_kwargs: dictionary containing the kwargs for the dataloader functions
     '''
     # Extract input shape from the model
-    model_path = cfg.model.model_path
-    file_extension = str(model_path).split('.')[-1].lower()
+    model_path = getattr(cfg.model, 'model_path', None)
     input_shape = cfg.model.input_shape
-    if cfg.model.model_path and file_extension in ['h5', 'keras']:
+    file_extension = str(model_path).split('.')[-1].lower() if model_path else None
+    if model_path and file_extension in ['h5', 'keras']:
         model_tmp = tf.keras.models.load_model(model_path, compile=False)
         input_shape = model_tmp.inputs[0].shape[1:]
-    else:
+    elif model_path:
         raise NotImplementedError(f"Model format '{file_extension}' not supported for dataloader preparation.")
     
     print("input_shape=", input_shape)

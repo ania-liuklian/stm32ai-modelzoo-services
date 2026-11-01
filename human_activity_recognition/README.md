@@ -31,6 +31,16 @@ sudo apt install python3.12 python3.12-venv
 
 Uses the included `mobility_v1` dataset. Training automatically evaluates the model on the test set. Outputs are saved under `tf/src/experiments_outputs/`. For separate evaluation, use the same config changes and command shown above.
 
+## RealWorld accelerometer + gyroscope
+
+The `training_config_realworld_imu.yaml` example trains on six synchronized channels (accelerometer X/Y/Z followed by gyroscope X/Y/Z). It preserves the existing 24-sample window. The loader accepts a merged CSV with headers `acc_x, acc_y, acc_z, gyro_x, gyro_y, gyro_z, activity` and a `subject` column. `recording` is optional. Common axis aliases are accepted; adapt the headers in `realworld_imu.py` if the downloaded repository uses other names. Each row must contain both sensors from the same sensor location and timestamp.
+
+Set `dataset.class_names` to the activity strings exactly as present in the CSV, and set `training_path` to that CSV. Use the chosen window length in `model.input_shape` (the example uses 24 samples). Windows are built within activity runs and sensor recordings, then split by subject to keep a subject out of other partitions. The loader requires a subject column, or a recording column when there is no subject column.
+
+The existing gravity rotation/suppression option is disabled for this data because it is accelerometer-specific. Fine-tuning can be run with `python -m human_activity_recognition.tf.src.training.train_realworld_imu --csv PATH --source-model PATH --classes walking,running,climbing_stairs,standing --source-classes Stationary,Walking,Jogging,Biking --output-dir OUTPUT`. It writes best/last checkpoints, training history, normalization values, per-class metrics, and confusion matrices. Use the same saved training-set mean and standard deviation during deployed inference.
+
+The repository's ST-IGN is a channels-last Conv2D model with shape `(batch, time, axes, 1)`, not a channels-first Conv1D. Its temporal convolution shares weights across axis positions. The transfer helper copies those convolution weights, maps flattened accelerometer features into the six-axis model, and zeroes the added gyroscope feature connections. The output classifier is transferred only when the source and target activity sets match; otherwise it remains newly initialized. The local pretrained checkpoint was trained on the mobility classes, so its classifier does not match the four example classes.
+
 You can refer to following readme tutorials that provide typical examples of operation modes:
 
    - [training, chain_tb](./docs/README_TRAINING.md)

@@ -64,6 +64,8 @@ def _parse_dataset_section(cfg: DictConfig, mode: str = None, mode_groups: DictC
             if not(cfg.class_names == ["Stationary", "Walking", "Jogging", "Biking"]):
                 raise ValueError(f"\nThe value of `class_names` for `mobility_v1` should be {['Stationary', 'Walking', 'Jogging', 'Biking']}\n"
                                 "Please check the 'dataset.class_names' section of your configuration file.")
+        elif cfg.dataset_name.lower() == "realworld_imu" and len(cfg.class_names) < 2:
+            raise ValueError("realworld_imu requires at least two activity names in dataset.class_names.")
     elif cfg.classes_file_path:
         cfg.class_names = get_class_names_from_file(cfg)
         print("[INFO] : Found {} classes in label file {}".format(len(cfg.class_names), cfg.classes_file_path))
@@ -132,6 +134,9 @@ def _check_dataset_contents(cfg: DictConfig) -> None:
                os.path.isfile(cfg.training_path) and os.path.isfile(cfg.test_path)):
             raise ValueError("valid values for training_path or test_path are missing.\n"
                              "Please check the cfg.dataset section")
+    if cfg.dataset_name.lower() == 'realworld_imu':
+        if not cfg.training_path or not os.path.isfile(cfg.training_path):
+            raise ValueError("realworld_imu requires dataset.training_path to point to a merged CSV file.")
 
 def _get_class_names(dataset_name: str) -> List:
     '''
@@ -276,11 +281,14 @@ def get_config(config_data: DictConfig) -> DefaultMunch:
     cds = cfg.dataset
     if cfg.operation_mode in ['benchmarking', 'deployment']:
         pass
-    elif(cds.dataset_name.lower() in ['wisdm', 'mobility_v1']):
+    elif(cds.dataset_name.lower() in ['wisdm', 'mobility_v1', 'realworld_imu']):
         _check_dataset_contents(cds)
-        cds.class_names = _get_class_names(cds.dataset_name)
+        if cds.dataset_name.lower() != 'realworld_imu':
+            cds.class_names = _get_class_names(cds.dataset_name)
+        elif not cds.class_names:
+            raise ValueError("realworld_imu requires dataset.class_names matching activity labels in the CSV.")
     else:
-        raise ValueError("\nOnly \'wisdm\' and \'mobility_v1\' datasets are supported." 
+        raise ValueError("\nOnly \'wisdm\', \'mobility_v1\', and \'realworld_imu\' datasets are supported."
                          "Please update your configuration file.")
 
     return cfg
